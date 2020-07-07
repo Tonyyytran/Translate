@@ -1,7 +1,5 @@
 # ML Kit Translate 
 
-This app demonstrates how to build an end-to-end user experience with [Google ML Kit APIs](https://developers.google.com/ml-kit) and following the new [Material for ML design guidelines](https://material.io/collections/machine-learning/).
-
 The goal is to make it as easy as possible to integrate ML Kit into your app with an experience that has been user tested:
 
 * Real-time translate using the on-device Text Recognition, Language ID, Translate APIs - an end-to-end solution from text recognition to translate in live camera.
