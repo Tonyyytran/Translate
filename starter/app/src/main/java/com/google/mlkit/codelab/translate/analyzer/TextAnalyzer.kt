@@ -17,6 +17,7 @@
 
 package com.google.mlkit.codelab.translate.analyzer
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.graphics.Rect
 import android.util.Log
@@ -25,6 +26,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.common.internal.ConnectionErrorMessages.getErrorMessage
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.codelab.translate.util.ImageUtils
@@ -44,9 +46,12 @@ class TextAnalyzer(
     private val imageCropPercentages: MutableLiveData<Pair<Int, Int>>
 ) : ImageAnalysis.Analyzer {
 
-    // TODO: Instantiate TextRecognition detector
-
-    // TODO: Add lifecycle observer to properly close ML Kit detectors
+    // DONE: Instantiate TextRecognition detector
+    // Done: Add lifecycle observer to properly close ML Kit detectors
+    private val detector = TextRecognition.getClient()
+    init {
+        lifecycle.addObserver(detector)
+    }
 
     @androidx.camera.core.ExperimentalGetImage
     override fun analyze(imageProxy: ImageProxy) {
@@ -94,11 +99,28 @@ class TextAnalyzer(
         val croppedBitmap =
             ImageUtils.rotateAndCrop(convertImageToBitmap, rotationDegrees, cropRect)
 
-        // TODO call recognizeText() once implemented
+        // DONE: call recognizeText() once implemented
+        recognizeText(InputImage.fromBitmap(croppedBitmap, 0)).addOnCompleteListener {
+            imageProxy.close()
+        }
     }
-
-    fun recognizeText() {
-        // TODO Use ML Kit's TextRecognition to analyze frames from the camera live feed.
+    // DONE: Use ML Kit's TextRecognition to analyze frames from the camera live feed.
+    fun recognizeText(   image: InputImage
+    ): Task<Text> {
+        // Pass image to an ML Kit Vision API
+        return detector.process(image)
+            .addOnSuccessListener { text ->
+                // Task completed successfully
+                result.value = text.text
+            }
+            .addOnFailureListener { exception ->
+                // Task failed with an exception
+                Log.e(TAG, "Text recognition error", exception)
+                val message = getErrorMessage(exception)
+                message?.let {
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
     private fun getErrorMessage(exception: Exception): String? {
